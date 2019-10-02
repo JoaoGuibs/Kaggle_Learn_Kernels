@@ -11,9 +11,9 @@ Finally, using the model, we predicted an approximate location for the ships in 
 
 ### Input image:
 
-![alt text](Data/lb_4.png)
+<img src="Data/lb_4.png" width="500" height=auto>
 
 ### Output image:
 
-![alt text](Outputs/lb_4.png)
+<img src="Outputs/lb_4.png" width="500" height=auto>
 
