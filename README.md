@@ -20,6 +20,8 @@ If everything proceeded without error, we can open the jupyter notebook by:
 
 The .ipynb file can then be opened and edited by using the Jupyter's GUI.
 
+Alternatively, you main run the python file.
+
 ## Addittional Information:
 If the models need to be trained, then a GPU might be necessary, therefore additional packages and the correct drivers might need to be installed:
 * tensorflow-gpu (install through conda)
