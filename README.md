@@ -1,5 +1,5 @@
 # Kaggle Learn Kernels
-Set of notebooks prepared for google colab that trains on different sets of data-sets that were taken from the Kaggle Website.
+Set of notebooks prepared for direct use in google colab, that train different neural networks on data-sets that were taken from the Kaggle Website.
 
 ## Datasets used:
   * Ships in Satellite Images (https://www.kaggle.com/rhammell/ships-in-satellite-imagery)

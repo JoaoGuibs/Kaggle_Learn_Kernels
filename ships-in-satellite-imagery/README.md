@@ -7,6 +7,8 @@ Finally, using the model, we predicted an approximate location for the ships in 
 
 ## Procedure:
 
+We trained the network using several convolution layers and a set of fully connected layers.
+
 ## Results:
 
 ### Input image:
