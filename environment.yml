@@ -1,0 +1,7 @@
+name: Kaggle_Kernels
+dependencies:
+- tensorflow
+- numpy
+- matplotlib
+- pillow
+- jupyterlab
