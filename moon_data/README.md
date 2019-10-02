@@ -21,12 +21,12 @@ The last layer of the network was a convolution layer with dimensionality equal 
 
 ### Input image:
 
-<img src="Data/render0001.png" width="240">
+<img src="Data/render0001.png" width="450" height=auto>
 
 ### Input mask:
 
-<img src="Data/ground0001.png" width="240">
+<img src="Data/ground0001.png" width="450" height=auto>
 
 ### Output mask:
 
-<img src="Outputs/out_render0001.png" width="240">
+<img src="Outputs/out_render0001.png" width="450" height=auto>
