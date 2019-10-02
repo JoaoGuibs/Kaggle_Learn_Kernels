@@ -17,6 +17,12 @@ The trained model was later used to perform segmentation in real moon images.
 
 ### Input image:
 
+![alt text](Data/render0001.png)
 
+### Input mask:
 
-### Output image:
+![alt text](Data/ground0001.png)
+
+### Output mask:
+
+![alt text](Outputs/out_render0001.png)
