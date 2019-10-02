@@ -14,3 +14,9 @@ The trained model was later used to perform segmentation in real moon images.
 
 
 ## Results:
+
+### Input image:
+
+
+
+### Output image:
