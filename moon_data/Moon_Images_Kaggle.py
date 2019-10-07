@@ -1,3 +1,18 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[14]:
+
+
+#!/usr/bin/python
+
+from google.colab import drive
+drive.mount('/content/gdrive')
+
+
+# In[ ]:
+
+
 #Imports
 import numpy as np
 import tensorflow as tf
@@ -19,6 +34,16 @@ from PIL import Image, ImageDraw
 import glob
 from xml.dom import minidom
 import cv2
+get_ipython().system('ln -sf /opt/bin/nvidia-smi /usr/bin/nvidia-smi')
+get_ipython().system('pip install gputil')
+get_ipython().system('pip install psutil')
+get_ipython().system('pip install humanize')
+import psutil
+import humanize
+import GPUtil as GPU
+
+
+# In[ ]:
 
 
 ##Classes:
@@ -41,8 +66,10 @@ class Custom_Generator(Sequence):
     batch_x = self.image_filenames[idx * self.batch_size:(idx + 1) * self.batch_size]
     batch_y = self.masks[idx * self.batch_size:(idx + 1) * self.batch_size]
     
-    out_image = np.array([ cv2.resize( cv2.imread(file_name), (self.ncols, self.nrows) ) * (1./255) for file_name in batch_x])
-    out_mask =  np.array([ cv2.resize( cv2.imread(mask_name), (self.ncols, self.nrows) ) * (1./255) for mask_name in batch_y]) 
+    out_image = np.array([ cv2.resize( cv2.imread(file_name), (self.ncols, self.nrows) )
+                          * (1./255) for file_name in batch_x])
+    out_mask =  np.array([ cv2.resize( cv2.imread(mask_name), (self.ncols, self.nrows) )
+                          * (1./255) for mask_name in batch_y]) 
     
     #Use a data augmentation procedure, adding readout noise and affine transformation
     if (self.augment == True):
@@ -79,8 +106,8 @@ class Custom_Generator(Sequence):
     Affine[0,1] = -scale * math.sin(theta)
     Affine[1,0] = scale * math.sin(theta)
     Affine[1,1] = scale * math.cos(theta)
-    Affine[0,2] = 0
-    Affine[1,2] = 0
+    Affine[0,2] = tx
+    Affine[1,2] = ty
     
     image = warp(image, Affine) #warps the image and mask using the affine
     mask = warp(mask, Affine)
@@ -88,7 +115,13 @@ class Custom_Generator(Sequence):
     return image, mask
     
     
- ##Functions
+
+
+# In[21]:
+
+
+
+##Functions
 def build_cnn_model(n_classes, nrows, ncols):
   """
     This function builds the CNN model.
@@ -120,8 +153,7 @@ def build_cnn_model(n_classes, nrows, ncols):
   c5 = keras.layers.Conv2D(256, (3, 3), activation='relu', padding='same', data_format = 'channels_last', name = 'conv5_2') (c5)
   c5 = keras.layers.Conv2D(256, (3, 3), activation='relu', padding='same', data_format = 'channels_last', name = 'conv5_3') (c5)
   c5 = BatchNormalization()(c5)
-  p5 = keras.layers.MaxPooling2D(pool_size=(2, 2), data_format = 'channels_last') (c5)
-
+  
   u6 = concatenate([Conv2DTranspose(256, (2,2), strides = 2, padding='same', data_format = 'channels_last')(c5), c4])
   c6 = keras.layers.Conv2D(256, (3, 3), activation='relu', padding='same', data_format = 'channels_last') (u6)
   c6 = keras.layers.Conv2D(256, (3, 3), activation='relu', padding='same', data_format = 'channels_last') (c6)
@@ -148,6 +180,10 @@ def build_cnn_model(n_classes, nrows, ncols):
   model.summary()
   return model
 
+
+# In[ ]:
+
+
 ### Intersection over union loss and accuracy 
 def IoU_loss(y_true, y_pred, eps=1e-6):
     
@@ -162,6 +198,9 @@ def IoU_acc(y_true, y_pred, eps=1e-6):
     union = K.sum(y_true, axis=[1,2,3]) + K.sum(y_pred, axis=[1,2,3]) - intersection
     
     return K.mean( (intersection + eps) / (union + eps), axis=0)
+
+
+# In[ ]:
 
 
 def plot_save_results(trained_model, base_dir, test_data_list, mask_data_list, ncols, nrows):
@@ -198,10 +237,44 @@ def plot_save_results(trained_model, base_dir, test_data_list, mask_data_list, n
     
   return 0
 
+
+# In[ ]:
+
+
+def plot_train_results(history):
+    """
+    Obtains the training history and plots the accuracy and loss
+    of both the training and validation.
+    """
+    acc = history.history['acc']
+    loss = history.history['loss']
+    val_acc = history.history['val_acc']
+    val_loss = history.history['val_loss']
+
+    plt.figure(figsize = (20,20) )
+    plt.subplot(2,1,1)
+    plt.plot(acc, label = 'Train Accuracy')
+    plt.plot(val_acc, label = 'Validation Accuracy')
+    plt.xlabel('Epoch Number')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    plt.subplot(2,1,2)
+    plt.plot(loss, label = 'Train Loss')
+    plt.plot(val_loss, label = 'Validation Loss')
+    plt.xlabel('Epoch Number')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.show()
+
+
+# In[22]:
+
+
 ###Main Program
 def main():
   #Loads the vgg16 model
-  #vgg_16_model = np.load(os.getcwd()+'/gdrive/My Drive/Colab Notebooks/Kaggle_Proj/vgg16.npy', allow_pickle=True,  encoding='latin1').item()
+  #vgg_16_model = np.load(os.getcwd()+'/gdrive/My Drive/Colab Notebooks/Kaggle_Proj/vgg16.npy', 
+    #allow_pickle=True,  encoding='latin1').item()
   
   is_train = input('Are we training the model? [y/n] ')
   
@@ -261,8 +334,8 @@ def main():
     #Callbacks: Check point, Early Stopping and Reduce Learning rate
     model_checkpoint = ModelCheckpoint(out_file, monitor = 'val_loss', verbose = 0, save_best_only = True)
     #early_stopping = EarlyStopping(monitor = 'val_loss')
-    reduce_lr = ReduceLROnPlateau(monitor = 'val_loss', factor = 0.2,
-                              patience = 1, min_lr = 0.00001)
+    reduce_lr = ReduceLROnPlateau(monitor = 'val_loss', factor = 0.2, 
+                                  patience = 1, min_lr = 0.00001)
     
     #Fits the train generator to the model
     history = cnn_model.fit_generator(train_gen, 
@@ -273,7 +346,7 @@ def main():
                                       verbose = 1,
                                       callbacks = [model_checkpoint, reduce_lr] )
     
-    
+    plot_train_results(history)
   else:
     
     test_data_list = glob.glob(base_dir + '/images/render/*.png')
@@ -289,11 +362,27 @@ def main():
     input_model_file = base_dir + '/Models/Moon_images_seg_cnn_06-0.35.h5'
     import tensorflow.losses
     tensorflow.losses.custom_loss = IoU_loss
-    trained_model = keras.models.load_model(input_model_file, custom_objects=dict(IoU_loss=IoU_loss, IoU_acc = IoU_acc))
+    trained_model = keras.models.load_model(input_model_file, 
+                                            custom_objects=dict(IoU_loss=IoU_loss, IoU_acc = IoU_acc))
     
     plot_save_results(trained_model, base_dir, test_data_list, mask_data_list, ncols, nrows)
 
   return 0
 
 if __name__=="__main__":
+  local_device_protos = device_lib.list_local_devices()
+  print(local_device_protos)
+  
+  #Function used in google colab to get available GPU devices
+  GPUs = GPU.getGPUs()
+  # XXX: only one GPU on Colab and isn’t guaranteed
+  gpu = GPUs[0]
+  def printm():
+    process = psutil.Process(os.getpid())
+    print("Gen RAM Free: " + humanize.naturalsize( psutil.virtual_memory().available ),
+          " | Proc size: " + humanize.naturalsize( process.memory_info().rss))
+    print("GPU RAM Free: {0:.0f}MB | Used: {1:.0f}MB | Util {2:3.0f}% | Total {3:.0f}MB".format(gpu.memoryFree, gpu.memoryUsed, gpu.memoryUtil*100, gpu.memoryTotal))
+  printm() 
+
   main()
+

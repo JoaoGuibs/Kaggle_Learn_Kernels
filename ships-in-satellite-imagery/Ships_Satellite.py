@@ -1,3 +1,18 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+
+
+#!/usr/bin/python
+
+from google.colab import drive
+drive.mount('/content/gdrive')
+
+
+# In[ ]:
+
+
 #Imports:
 import numpy as numpy
 import tensorflow as tf
@@ -17,8 +32,12 @@ import numpy as np
 from PIL import Image, ImageDraw 
 import re
 import glob
-##Functions::
 
+
+# In[ ]:
+
+
+##Functions::
 def create_cnn_model():
     """
     This functions creates the Deep Learning Model used. Our model has 4 
@@ -44,9 +63,14 @@ def create_cnn_model():
     model.add(Dense(1024 , activation='relu', kernel_initializer='glorot_normal'))
     model.add(Dropout(0.5))
     model.add(Dense(2 , activation = 'softmax'))
+    
     print(model.summary())
     
     return model
+
+
+# In[ ]:
+
 
 def read_json_data(input_file):
     """
@@ -93,10 +117,14 @@ def draw_box(scene, coord):
 
     return scene
 
+
+# In[ ]:
+
+
 def evalute_scene(input_file, model, scene_file):
     """
-    We evaluate a full satellite image, looking for the locations
-    of the ships. 
+    We evaluate a full satellite image, looking for the 
+    approximate locations of the ships in 80x80 ROI.
     """
     #Open the scene that will be evaluated
     scene = Image.open(input_file)
@@ -110,6 +138,7 @@ def evalute_scene(input_file, model, scene_file):
     plt.show()
     
     image_size = (80,80,3) #Harcoded image size
+    
     #The step is a tolerance that allows us to better obtain good images of the boats
     step = 10
     coordinates = []
@@ -120,7 +149,8 @@ def evalute_scene(input_file, model, scene_file):
         for j in range(0, int((scene.shape[1] - (image_size[1] - step))/step )):
             #Create a 80x80 tile, and add the info on the scene
             small_tile = np.zeros((1, image_size[0], image_size[1], image_size[2]))
-            small_tile[0] = scene[ i*step:i*step + image_size[0],  j*step : j*step + image_size[1] , 0:image_size[2]]
+            small_tile[0] = scene[i*step:i*step + image_size[0],
+                                  j*step : j*step + image_size[1], 0:image_size[2]]
 
             #Predict if there is a visible boat            
             prediction = model.predict(small_tile)
@@ -141,6 +171,9 @@ def evalute_scene(input_file, model, scene_file):
     im = Image.fromarray(scene_with_boxes.astype(np.uint8))
     im.save(os.getcwd()+'/gdrive/My Drive/Colab Notebooks/Ships_ML/Outputs/'+scene_file, 'PNG')
     return 0
+
+
+# In[ ]:
 
 
 def plot_train_results(history):
@@ -168,10 +201,15 @@ def plot_train_results(history):
     plt.legend()
     plt.show()
 
+
+# In[13]:
+
+
 ###Main Program:
 def main():
 
     is_model_trained = input('Is there a trained model which you want to use? [y/n]')
+    
     base_dir = os.getcwd()+'/gdrive/My Drive/Colab Notebooks/Ships_ML/'
     
     if(is_model_trained != 'y'):
@@ -198,7 +236,8 @@ def main():
         ###END OPTIONAL
         
         from tensorflow.keras.optimizers import Adam
-        cnn_model.compile(optimizer = Adam(1e-3, decay=1e-6), loss = 'categorical_crossentropy', metrics = ['accuracy'])
+        cnn_model.compile(optimizer = Adam(1e-3, decay=1e-6), loss = 'categorical_crossentropy',
+                          metrics = ['accuracy'])
 
         N_images = len(json_obj['data'])
         input_data = np.array(json_obj['data']).astype(np.uint8).reshape((N_images, 3, 80, 80))
@@ -236,13 +275,19 @@ def main():
         input_images = datagen.flow(shuffled_input_data, shuffled_label_data, batch_size = batch_size)
         validation_images = valgen.flow(shuffled_val_data, shuffled_val_label_data )
         
-        out_file = base_dir + 'models/ships_cnn_model_b"%s"_e"%s"'%(str(batch_size), str(epochs)) +'_{epoch:02d}-{val_loss:.2f}.h5'
+        out_file = base_dir + 'models/ships_cnn_model_b"%s"_e"%s"'
+                                get_ipython().run_line_magic('(str(batch_size),', "str(epochs)) +'_{epoch:02d}-{val_loss:.2f}.h5'")
         #Define the callbacks used in training
         reduce_lr = ReduceLROnPlateau(monitor = 'val_loss', factor = 0.2,
                               patience = 3, min_lr = 0.0001)
-        save_best = ModelCheckpoint(out_file, monitor='val_loss', verbose = 0, save_best_only=True)
+        save_best = ModelCheckpoint(out_file, monitor='val_loss', 
+                                    verbose = 0, save_best_only=True)
         
-        history = cnn_model.fit_generator(input_images, epochs = epochs , verbose = 2, validation_data = validation_images, callbacks = [reduce_lr, save_best] )
+        history = cnn_model.fit_generator(input_images, 
+                                          epochs = epochs,
+                                          verbose = 2,
+                                          validation_data = validation_images,
+                                          callbacks = [reduce_lr, save_best] )
         
         #Show the training and validation results over each epoch
         plot_train_results(history)
@@ -264,3 +309,4 @@ if __name__=="__main__":
     local_device_protos = device_lib.list_local_devices()
     print(local_device_protos)
     main()
+

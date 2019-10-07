@@ -6,11 +6,15 @@ Set of notebooks prepared for direct use in google colab, that train different n
   * Simulated and real lunar soil images (https://www.kaggle.com/romainpessia/artificial-lunar-rocky-landscape-dataset)
 
 ## Installation instructions:
-First we need to install Miniconda by:
+First clone the repository by:
+
+* ``` git clone https://github.com/JoaoGuibs/Kaggle_Learn_Kernels ```
+
+Then we need to install Miniconda and create an environment by:
 
 * Download the Miniconda installer file [from here](https://docs.conda.io/en/latest/miniconda.html)
 * Install it (e.g., on Linux 64 bit use the command: ``` bash Miniconda3-latest-Linux-x86_64.sh ```
-* Change directory to the main folder and then create the conda environment by:
+* Change directory to the main project folder and then create the conda environment by:
   * ``` conda env create -f environment.yml ```
   * ``` conda activate Kaggle_Kernels ```
 
